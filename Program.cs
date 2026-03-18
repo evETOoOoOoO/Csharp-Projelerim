@@ -1,40 +1,108 @@
-﻿//EndocrineCalculatorv1
-Console.WriteLine("=== BMR (Basal Metabolic Rate), BMI (Body Mass Index) and HOMA-IR (Insulin Resistance) Calculator ===");
-Console.WriteLine("=== BMR(Bazal Metabolizma Hızı),VKI(Vücut Kitle Endeksi) ve HOMA-IR(İnsülin Direnci) Hesaplayıcı ===");
-Console.WriteLine("(Gender only affects BMR results; it does not affect BMI or HOMA-IR)");
-Console.WriteLine("(Cinsiyetiniz sadece BMR sonucunu etkiler VKI'yi ve HOMA-IR'ı etkilemez)");
-Console.WriteLine("Please enter your gender (M/F).");
-Console.WriteLine("Cinsiyetinizi Girin(M=Erkek/F=Kadın)(M/F):");
-string gender = Console.ReadLine().ToUpper();
+﻿//GOOD GAME
+int heroHP = 100;
+int monsterHP = 150;
 
-Console.Write("Kilonuzu Girin / Enter your weight (kg): ");
-var weight = Convert.ToDecimal(Console.ReadLine());
+Random dice = new Random();
 
-Console.Write("Boyunuzu Girin / Enter your height (cm): ");
-var heightCm = Convert.ToDecimal(Console.ReadLine());
-
-Console.Write("Yaşınızı Girin / Enter your age: ");
-decimal age = Convert.ToDecimal(Console.ReadLine());
-
-Console.Write("Açlık Kan Şekerinizi Girin / Enter Fasting Glucose (mg/dL): ");
-decimal fastingGlucose = Convert.ToDecimal(Console.ReadLine());
-
-Console.Write("Açlık İnsülininizi Girin / Enter Fasting Insulin (µU/mL): ");
-decimal fastingInsulin = Convert.ToDecimal(Console.ReadLine());
-
-decimal heightM = heightCm / 100m; 
-decimal bmı = weight / (heightM * heightM);
-decimal homaIr = (fastingGlucose * fastingInsulin) / 405m;
-
-decimal bmr = 0;
-if (gender =="M")
+static void ColorPrint(string message, ConsoleColor color)
 {
-       bmr = 88.362m + (13.397m * weight) + (4.799m * heightCm) - (5.677m * age);
+    Console.ForegroundColor = color;
+    Console.WriteLine(message);
+    Console.ResetColor();
 }
-else if (gender =="F")
+
+while (heroHP > 0 && monsterHP > 0)
 {
-       bmr = 447.593m + (9.247m * weight) + (3.098m * heightCm) - (4.330m * age);
+    Console.WriteLine("Hamleni seç: 1-(Saldır),  2-(İksir iç), 3-(Blok)");
+    string choise = Console.ReadLine();
+
+    if (choise != "1" && choise != "2" && choise != "3")
+    {
+        ColorPrint("Geçersiz hamle! Lütfen 1, 2 veya 3 seçin.", ConsoleColor.Yellow);
+        continue;
+    }
+
+    int luck = dice.Next(1, 11);
+
+    if (choise == "1")
+    {
+        int attack = dice.Next(1, 16);
+
+        if (luck <= 2)
+        {
+            ColorPrint("Saldırı başarısız oldu! Canavar hasar almadı.", ConsoleColor.DarkRed);
+        }
+        else if (luck >= 9)
+        {
+            ColorPrint($"Kritik vuruş! Canavar fazladan {attack * 2} hasar aldı.", ConsoleColor.Yellow);
+            monsterHP -= attack * 2;
+        }
+        else
+        {
+            ColorPrint($"Normal vuruş! Canavar {attack} hasar aldı.", ConsoleColor.Red);
+            monsterHP -= attack;
+        }
+    }
+    else if (choise == "2")
+    {
+        if (luck <= 3)
+        {
+            ColorPrint("İksir bozuk çıktı! Hiçbir sağlık kazanılmadı.", ConsoleColor.DarkRed);
+            continue;
+        }
+        ColorPrint("İksir içiliyor... 🍷", ConsoleColor.Cyan);
+        if (heroHP >= 100)
+        {
+            ColorPrint("Sağlığınız zaten tam! İksir kullanılamaz.", ConsoleColor.Yellow);
+            continue;
+        }
+        int heal = dice.Next(10, 21);
+        heroHP += heal;
+        if (heroHP > 100) heroHP = 100;
+
+        ColorPrint($"İksir içildi! Kahraman {heal} sağlık kazandı.", ConsoleColor.Green);
+    }
+    else if (choise == "3")
+    {
+        ColorPrint("Kahraman blok pozisyonuna geçti! 🛡️", ConsoleColor.Cyan);
+    }
+
+    // CANAVARIN SIRASI
+    if (monsterHP > 0)
+    {
+        int monsterAttack = dice.Next(1, 21);
+
+        if (choise == "3")
+        {
+            int blockLuck = dice.Next(1, 11);
+            if (blockLuck <= 6)
+            {
+                ColorPrint("Blok başarılı! Canavarın saldırısı boşa gitti.", ConsoleColor.Green);
+            }
+            else
+            {
+                ColorPrint($"Blok başarısız! Kahraman savunmasız yakalandı: {monsterAttack} hasar.", ConsoleColor.Magenta);
+                heroHP -= monsterAttack;
+            }
+        }
+        else
+        {
+            ColorPrint($"Canavar saldırıyor! Kahraman {monsterAttack} hasar aldı.", ConsoleColor.Magenta);
+            heroHP -= monsterAttack;
+        }
+    }
 }
-Console.WriteLine($"BMR (Basal Metabolic Rate) Sonucunuz / Your BMR Result: {bmr}");
-Console.WriteLine($"VKI (Vücut Kitle Endeksi) Sonucunuz / Your BMI Result: {bmı}");
-Console.WriteLine($"HOMA-IR (İnsülin Direnci) Sonucunuz/ Your HOMA-IR Result: {homaIr}");
+ColorPrint("═════════════════════════════════════", ConsoleColor.White);
+ColorPrint($"Kahraman HP: {heroHP}/100", ConsoleColor.Green);
+ColorPrint($"Canavar HP:  {monsterHP}/150", ConsoleColor.Red);
+ColorPrint("═════════════════════════════════════\n", ConsoleColor.White);
+
+Console.WriteLine("\n⚔️ OYUN BİTTİ!\n");
+if (heroHP > 0)
+{
+    ColorPrint("Büyük Düşman Yenildi!", ConsoleColor.Green);
+}
+else
+{
+    ColorPrint("Öldün!", ConsoleColor.Red);
+}

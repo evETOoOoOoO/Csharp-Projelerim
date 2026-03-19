@@ -19,16 +19,18 @@ void ColorPrint(string message, ConsoleColor color)
 
 while (level <= 5 && heroHP > 0 && gameRunning)
 {
-    int monsterMaxHP = 150 + (level - 1) * 30;
+    int heroMaxHP = 100 + (level - 1) * 10;
+    int monsterMaxHP = 150 + (level - 1) * 50;
     monsterHP = monsterMaxHP;
+    heroHP = Math.Min(heroHP, heroMaxHP);
 
-    ColorPrint($"\n⚔️  BÖLÜM {level} BAŞLIYOR! Canavar HP: {monsterMaxHP}", ConsoleColor.Cyan);
+    ColorPrint($"\n⚔️  BÖLÜM {level} BAŞLIYOR! Bu bölümdeki canavar HP: {monsterMaxHP}", ConsoleColor.Cyan);
 
     while (heroHP > 0 && monsterHP > 0 && gameRunning)
     {
         Console.WriteLine();
         ColorPrint("═════════════════════════════════════", ConsoleColor.White);
-        ColorPrint($"❤️  Kahraman HP : {heroHP}/100", ConsoleColor.Green);
+        ColorPrint($"❤️  Kahraman HP : {heroHP}/{heroMaxHP}", ConsoleColor.Green);
         ColorPrint($"💀  Canavar HP  : {monsterHP}/{monsterMaxHP}", ConsoleColor.Red);
         ColorPrint("═════════════════════════════════════", ConsoleColor.White);
         Console.WriteLine();
@@ -55,7 +57,7 @@ while (level <= 5 && heroHP > 0 && gameRunning)
 
         if (choice == "1")
         {
-            int heroAttack = dice.Next(1, 16);
+            int heroAttack = dice.Next(5, 20);
             if (luck <= 2)
                 ColorPrint("Saldırı başarısız oldu! Canavar hasar almadı.", ConsoleColor.DarkRed);
             else if (luck >= 8)
@@ -73,12 +75,12 @@ while (level <= 5 && heroHP > 0 && gameRunning)
         {
             if (luck <= 3)
                 ColorPrint("İksir bozuk çıktı! Hiçbir sağlık kazanılmadı.", ConsoleColor.DarkRed);
-            else if (heroHP >= 100)
+            else if (heroHP >= heroMaxHP)
                 ColorPrint("Sağlığınız zaten tam! İksir kullanılamaz.", ConsoleColor.Yellow);
             else
             {
                 int heal = dice.Next(10, 21);
-                heroHP = Math.Min(heroHP + heal, 100);
+                heroHP = Math.Min(heroHP + heal,heroMaxHP);
                 ColorPrint($"İksir içildi! Kahraman {heal} sağlık kazandı.", ConsoleColor.Green);
             }
         }
@@ -89,7 +91,7 @@ while (level <= 5 && heroHP > 0 && gameRunning)
 
         if (monsterHP > 0)
         {
-            int monsterAttack = dice.Next(1, 15);
+            int monsterAttack = dice.Next(5, 25);
             if (choice == "3")
             {
                 int blockLuck = dice.Next(1, 11);
@@ -112,7 +114,7 @@ while (level <= 5 && heroHP > 0 && gameRunning)
     if (!gameRunning) break;
 
     ColorPrint("═════════════════════════════════════", ConsoleColor.White);
-    ColorPrint($"Kahraman HP: {heroHP}/100", ConsoleColor.Green);
+    ColorPrint($"Kahraman HP: {heroHP}/{heroMaxHP}", ConsoleColor.Green);
     ColorPrint($"Canavar HP:  {monsterHP}/{monsterMaxHP}", ConsoleColor.Red);
     ColorPrint("═════════════════════════════════════\n", ConsoleColor.White);
 
@@ -120,8 +122,9 @@ while (level <= 5 && heroHP > 0 && gameRunning)
     {
         ColorPrint($"⚔️  BÖLÜM {level} BİTTİ! Canavar yenildi! 🎉", ConsoleColor.Green);
         level++;
-        heroHP = Math.Min(heroHP + 20, 100);
-        ColorPrint($"Sonraki bölüme geçiliyor... HP: {heroHP}/100\n", ConsoleColor.Cyan);
+        int newHeroMaxHP = 100 + (level - 1) * 10;
+        heroHP = Math.Min(heroHP + 20, newHeroMaxHP);
+        ColorPrint($"Sonraki bölüme geçiliyor... HP: {heroHP}/{newHeroMaxHP}\n", ConsoleColor.Cyan);
     }
     else if (heroHP <= 0)
     {

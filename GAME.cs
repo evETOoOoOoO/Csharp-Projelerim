@@ -1,5 +1,5 @@
 //GOOD GAME
-using System:
+using System;
 
 int heroHP = 100;
 int monsterHP = 150;

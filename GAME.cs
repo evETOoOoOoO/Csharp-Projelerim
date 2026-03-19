@@ -19,7 +19,7 @@ void ColorPrint(string message, ConsoleColor color)
 
 while (level <= 5 && heroHP > 0 && gameRunning)
 {
-    int monsterMaxHP = 150 + (level - 1) * 50;
+    int monsterMaxHP = 150 + (level - 1) * 30;
     monsterHP = monsterMaxHP;
 
     ColorPrint($"\n⚔️  BÖLÜM {level} BAŞLIYOR! Canavar HP: {monsterMaxHP}", ConsoleColor.Cyan);
@@ -55,18 +55,18 @@ while (level <= 5 && heroHP > 0 && gameRunning)
 
         if (choice == "1")
         {
-            int attack = dice.Next(1, 16);
+            int heroAttack = dice.Next(1, 16);
             if (luck <= 2)
                 ColorPrint("Saldırı başarısız oldu! Canavar hasar almadı.", ConsoleColor.DarkRed);
-            else if (luck >= 9)
+            else if (luck >= 8)
             {
-                ColorPrint($"Kritik vuruş! Canavar fazladan {attack * 2} hasar aldı.", ConsoleColor.Yellow);
-                monsterHP -= attack * 2;
+                ColorPrint($"Kritik vuruş! Canavar fazladan {heroAttack * 2} hasar aldı.", ConsoleColor.Yellow);
+                monsterHP -= heroAttack * 2;
             }
             else
             {
-                ColorPrint($"Normal vuruş! Canavar {attack} hasar aldı.", ConsoleColor.Red);
-                monsterHP -= attack;
+                ColorPrint($"Normal vuruş! Canavar {heroAttack} hasar aldı.", ConsoleColor.Red);
+                monsterHP -= heroAttack;
             }
         }
         else if (choice == "2")
@@ -89,7 +89,7 @@ while (level <= 5 && heroHP > 0 && gameRunning)
 
         if (monsterHP > 0)
         {
-            int monsterAttack = dice.Next(1, 21);
+            int monsterAttack = dice.Next(1, 15);
             if (choice == "3")
             {
                 int blockLuck = dice.Next(1, 11);

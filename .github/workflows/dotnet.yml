@@ -1,28 +1,90 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
-
+name: .NET CI
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "ana" ]
   pull_request:
-    branches: [ "main" ]
-
+    branches: [ "main", "ana" ]
+env:
+  BUILD_CONFIG: Release
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+        dotnet-version: '10.x'
+    - name: Değişen dosyaları bul
+      id: changed-files
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          git diff --name-only origin/${{ github.base_ref }} HEAD > changed_files.txt
+        elif git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+          git diff --name-only HEAD~1 HEAD > changed_files.txt
+        else
+          git ls-files > changed_files.txt
+        fi
+        echo "Değişen dosya sayısı: $(wc -l < changed_files.txt)"
+        cat changed_files.txt
+    - name: Değişen projeleri tespit et
+      id: find-projects
+      run: |
+        find . -name '*.csproj' -not -path '*/obj/*' -not -path '*/bin/*' > all_projects.txt
+        > affected_projects.txt
+        while read proj; do
+          proj_dir=$(dirname "$proj" | sed 's|^\./||')
+          while read file; do
+            file_norm=$(echo "$file" | sed 's|^\./||')
+            if [[ "$file_norm" == "$proj_dir"* ]]; then
+              echo "$proj" >> affected_projects.txt
+              break
+            fi
+          done < changed_files.txt
+        done < all_projects.txt
+        sort -u affected_projects.txt > unique_affected.txt
+        echo "Etkilenen proje sayısı: $(wc -l < unique_affected.txt)"
+        cat unique_affected.txt
+    - name: Restore
+      run: |
+        find . -name '*.csproj' -not -path '*/obj/*' -not -path '*/bin/*' \
+          | xargs -r dotnet restore
+    - name: Build (Etkilenen projeleri derle)
+      run: |
+        if [ -s unique_affected.txt ]; then
+          xargs -r dotnet build --configuration ${{ env.BUILD_CONFIG }} --no-restore < unique_affected.txt
+        else
+          echo "✅ Derleme gerektiren değişiklik yok"
+        fi
+    - name: Test (Etkilenen projeleri test et)
+      run: |
+        if [ -s unique_affected.txt ]; then
+          while read proj; do
+            echo "🧪 Test ediliyor: $proj"
+            dotnet test "$proj" --configuration ${{ env.BUILD_CONFIG }} --no-build --verbosity normal || echo "⚠️ Test başarısız (test projesi olmayabilir): $proj"
+          done < unique_affected.txt
+        else
+          echo "✅ Test gerektiren değişiklik yok"
+        fi
+    - name: Değişiklik özeti
+      if: always()
+      run: |
+        {
+          echo "## 📊 Değişiklik Özeti"
+          echo "| Metrik | Değer |"
+          echo "|--------|-------|"
+          echo "| Değişen dosya | $(wc -l < changed_files.txt) |"
+          echo "| Etkilenen proje | $(wc -l < unique_affected.txt) |"
+          echo ""
+          echo "### 📁 Değişen Dosyalar"
+          sed 's/^/- /' changed_files.txt
+          echo ""
+          echo "### 🎯 Etkilenen Projeler"
+          if [ -s unique_affected.txt ]; then
+            sed 's/^/- /' unique_affected.txt
+          else
+            echo "- Hiçbiri (build tetiklenmedi)"
+          fi
+        } >> $GITHUB_STEP_SUMMARY

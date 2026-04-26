@@ -2,6 +2,8 @@
 /* * UYARI: Bu kütüphane sadece eğitim ve bilgilendirme amaçlıdır. 
  * Tıbbi kararlarda veya klinik ortamlarda kullanılmak üzere tasarlanmamıştır.
  */
+using System;
+
 namespace EndocrineCalculator.Lib
 {
     public static class HealthCalculator

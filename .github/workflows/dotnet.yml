@@ -50,11 +50,11 @@ jobs:
     - name: Restore
       run: |
         find . -name '*.csproj' -not -path '*/obj/*' -not -path '*/bin/*' \
-          | xargs -r dotnet restore
+          | xargs -r -I{} dotnet restore {}
     - name: Build (Etkilenen projeleri derle)
       run: |
         if [ -s unique_affected.txt ]; then
-          xargs -r dotnet build --configuration ${{ env.BUILD_CONFIG }} --no-restore < unique_affected.txt
+          xargs -r -I{} dotnet build {} --configuration ${{ env.BUILD_CONFIG }} --no-restore < unique_affected.txt
         else
           echo "✅ Derleme gerektiren değişiklik yok"
         fi
